@@ -5,6 +5,7 @@ import glob
 import numpy as np
 import utils
 from PIL import Image
+import shutil
 import logging
 import argparse
 import torch.utils
@@ -76,10 +77,12 @@ def main():
     logging.info('gpu device = %s' % args.gpu)
     logging.info("args = %s", args)
 
-    loss_file_path = './loss.py' # documenting the loss file
+    loss_file_path = './loss.py'
     if os.path.exists(loss_file_path):
-        shutil.copy(loss_file_path, os.path.join(save_dir, 'loss.py'))
-        logging.info(f"Saved loss.py to {save_dir}")
+        shutil.copy(loss_file_path, os.path.join(args.save_root, 'loss.py'))
+        logging.info(f"Saved loss.py to {args.save_root}")
+    else:
+        logging.warning(f"loss.py not found at {loss_file_path}")
 
     model =Network()
     utils.save(model, os.path.join(args.save, 'initial_weights.pt'))
