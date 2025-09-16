@@ -26,6 +26,7 @@ import time
 import glob
 import numpy as np
 import utils
+import shutil
 from PIL import Image
 import logging
 import argparse
@@ -149,7 +150,14 @@ def main():
 
     if not image_dirs:
         raise ValueError(f"No valid image pairs found in {args.data_root}")
-        
+    
+    loss_file_path = './loss.py'
+    if os.path.exists(loss_file_path):
+        shutil.copy(loss_file_path, os.path.join(args.save_root, 'loss.py'))
+        logging.info(f"Saved loss.py to {args.save_root}")
+    else:
+        logging.warning(f"loss.py not found at {loss_file_path}")
+
     for img_dir in image_dirs:
         logging.info(f"Starting processing for {os.path.basename(img_dir)}")
         process_image_pair(img_dir, args.save_root)

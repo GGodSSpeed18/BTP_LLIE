@@ -51,33 +51,34 @@ class LossFunction(nn.Module):
         loss += self._l2_loss(normalized_low_light_layer, clamped_adjusted_low_light) *1000
         loss += self.smooth_loss(L2.detach(), s2) *5
         loss += self.L_TV_loss(s2)*1600
+        # ORIGINAL LOSS_RESIDUAL
+
         #Loss_res_1
         L11, L12 = pair_downsampler(input)
-        # ORIGINAL LOSS_RESIDUAL
         # comp1 = self._l2_loss(L11, L_pred2) * 1000
         # comp2 = self._l2_loss(L12, L_pred1) * 1000
         # loss += comp1+comp2
 
         # FEATURE SPACE LOSS USING VGG16
-        if next(self.phi.parameters()).device != input.device:
-            self.phi = self.phi.to(input.device)
-        with torch.no_grad():  # No grad through VGG
-            feat_L11 = self.phi(L11)
-            feat_L_pred2 = self.phi(L_pred2)
-            feat_L12 = self.phi(L12)
-            feat_L_pred1 = self.phi(L_pred1)
-        logging.info("Feature-space residual loss: %f", (self._l2_loss(feat_L11, feat_L_pred2)+self._l2_loss(feat_L12, feat_L_pred1)))
-        logging.info("Image-space residual loss: %f", (self._l2_loss(L11, L_pred2)+self._l2_loss(L12, L_pred1)))
+        # if next(self.phi.parameters()).device != input.device:
+        #     self.phi = self.phi.to(input.device)
+        # with torch.no_grad():  # No grad through VGG
+        #     feat_L11 = self.phi(L11)
+        #     feat_L_pred2 = self.phi(L_pred2)
+        #     feat_L12 = self.phi(L12)
+        #     feat_L_pred1 = self.phi(L_pred1)
+        # logging.info("Feature-space residual loss: %f", (self._l2_loss(feat_L11, feat_L_pred2)+self._l2_loss(feat_L12, feat_L_pred1)))
+        # logging.info("Image-space residual loss: %f", (self._l2_loss(L11, L_pred2)+self._l2_loss(L12, L_pred1)))
         # feature-space losses are approximately 1000x image pixel-space losses, so no need for the multiplier
-        loss += self._l2_loss(feat_L11, feat_L_pred2)
-        loss += self._l2_loss(feat_L12, feat_L_pred1)
+        # loss += self._l2_loss(feat_L11, feat_L_pred2)
+        # loss += self._l2_loss(feat_L12, feat_L_pred1)
 
 
         # PERCEPTUAL MS-SSIM+L2 LOSS
-        # alpha = 0.60
-        # add01 = ms_ssim_l2_loss(L11, L_pred2, alpha=alpha, data_range=1.0, lossfunctionObj=self)
-        # add02 = ms_ssim_l2_loss(L12, L_pred1, alpha=alpha, data_range=1.0, lossfunctionObj=self)
-        # loss += add01+add02
+        alpha = 0.60
+        add01 = ms_ssim_l2_loss(L11, L_pred2, alpha=alpha, data_range=1.0, lossfunctionObj=self)
+        add02 = ms_ssim_l2_loss(L12, L_pred1, alpha=alpha, data_range=1.0, lossfunctionObj=self)
+        loss += add01+add02
 
         # TRYING TO USE DECAYING ALPHA OVER TRAINING EPOCHS
         # initial_alpha = 0.75

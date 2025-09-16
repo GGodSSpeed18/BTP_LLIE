@@ -76,7 +76,10 @@ def main():
     logging.info('gpu device = %s' % args.gpu)
     logging.info("args = %s", args)
 
-
+    loss_file_path = './loss.py' # documenting the loss file
+    if os.path.exists(loss_file_path):
+        shutil.copy(loss_file_path, os.path.join(save_dir, 'loss.py'))
+        logging.info(f"Saved loss.py to {save_dir}")
 
     model =Network()
     utils.save(model, os.path.join(args.save, 'initial_weights.pt'))
